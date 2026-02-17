@@ -1,7 +1,10 @@
 package com.example.demo.Services;
 
+import java.util.ArrayList;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -11,8 +14,11 @@ import com.example.demo.DTO.RegisterDTO;
 import com.example.demo.Entity.RegisterEntity;
 import com.example.demo.Repository.UserRepo;
 
+import jakarta.annotation.PostConstruct;
+
 @Service
 public class RegisterServices {
+
     private final PasswordEncoder passwordEncoder;
     private final UserRepo userRepo;
 
@@ -20,6 +26,8 @@ public class RegisterServices {
         this.passwordEncoder = passwordEncoder;
         this.userRepo = userRepo;
     }
+
+
 
     public ResponseEntity<Map<String, String>> registerUser(@Validated RegisterDTO registerDTO) {
         // Registration logic goes here (e.g., save to database)
