@@ -78,8 +78,7 @@ public class ProductServices {
                     .body("You are not authorized to update this product"); // 403 Forbidden
         }
 
-        System.out.println("user id = >"+ user.getId() );
-        System.out.println("product id = >"+ product.getUserId() );
+
 
         boolean updated = false;
         if (updatedProduct.getName() != null && !updatedProduct.getName().isBlank()) {
