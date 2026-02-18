@@ -3,12 +3,14 @@ package com.example.demo.Entity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 @Document(collection = "users")
 public class RegisterEntity {
     @Id
     private String id;
     @Indexed(unique = true)
+     @Field("username")
     private String username;
     private String password;
     private String email;

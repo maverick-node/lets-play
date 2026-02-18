@@ -35,7 +35,7 @@ public class RegisterServices {
         }
 
         // 2️⃣ Set default role
-        registerDTO.setRole("aDmIn");
+        registerDTO.setRole("USER");
 
         // 3️⃣ Validate username and email uniqueness
         if (userRepo.existsByUsername(registerDTO.getUsername())) {

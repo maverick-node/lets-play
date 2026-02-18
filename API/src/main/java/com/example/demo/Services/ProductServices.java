@@ -73,10 +73,13 @@ public class ProductServices {
         ProductEntity product = productOpt.get();
 
         // Admin or owner check
-        if (!user.getRole().equalsIgnoreCase("admin") && !user.getId().equals(product.getUserId())) {
+        if (!user.getRole().equalsIgnoreCase("admin") && !user.getId().equalsIgnoreCase(product.getUserId())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("You are not authorized to update this product"); // 403 Forbidden
         }
+
+        System.out.println("user id = >"+ user.getId() );
+        System.out.println("product id = >"+ product.getUserId() );
 
         boolean updated = false;
         if (updatedProduct.getName() != null && !updatedProduct.getName().isBlank()) {

@@ -1,6 +1,7 @@
 package com.example.demo.Controller;
 
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,11 +13,8 @@ import com.example.demo.Services.RegisterServices;
 
 @RestController
 public class RegisterController {
-    private final RegisterServices registerServices;
-
-    public RegisterController(RegisterServices registerServices) {
-        this.registerServices = registerServices;
-    }
+    @Autowired
+    private  RegisterServices registerServices;
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Validated @RequestBody RegisterDTO registerDTO) {
