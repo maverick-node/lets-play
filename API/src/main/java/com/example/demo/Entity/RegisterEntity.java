@@ -1,6 +1,5 @@
 package com.example.demo.Entity;
 
-import org.hibernate.validator.constraints.UniqueElements;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -9,13 +8,12 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class RegisterEntity {
     @Id
     private String id;
-   @Indexed(unique = true)
+    @Indexed(unique = true)
     private String username;
     private String password;
     private String email;
     private String role;
-   private String userUuid; 
-  
+    private String userUuid;
 
     public String getId() {
         return id;
@@ -24,7 +22,6 @@ public class RegisterEntity {
     public void setId(String id) {
         this.id = id;
     }
-    
 
     public String getuserUuid() {
         return userUuid;
@@ -54,14 +51,17 @@ public class RegisterEntity {
     public String getEmail() {
         return email;
     }
+
     public void setEmail(String email) {
         this.email = email;
     }
+
     public String getRole() {
         return role;
     }
+
     public void setRole(String role) {
         this.role = role;
     }
-    
+
 }

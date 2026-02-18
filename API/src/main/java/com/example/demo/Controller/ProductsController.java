@@ -17,57 +17,63 @@ import com.example.demo.DTO.UpdatedProduct;
 import com.example.demo.Services.ProductServices;
 
 import jakarta.validation.Valid;
-
 @RestController
 public class ProductsController {
     private final ProductServices productServices;
     private final JwtUtil jwtUtil;
 
-    public ProductsController(ProductServices productService, JwtUtil jwtUtil) {
-        this.productServices = productService;
+    public ProductsController(ProductServices productServices, JwtUtil jwtUtil) {
+        this.productServices = productServices;
         this.jwtUtil = jwtUtil;
     }
 
-    // Get Products (Public Access)
+    // Get all products (public)
     @GetMapping("/products")
-    public ResponseEntity<?> getProduct() {
+    public ResponseEntity<?> getProducts() {
         return productServices.getAll();
     }
 
-    // Add Products Only Logged Users
+    // Add product (requires login)
     @PostMapping("/products")
     public ResponseEntity<?> addProduct(@CookieValue(name = "jwt", required = false) String jwt,
-            @Valid @RequestBody ProductDTO productDTO) {
+                                        @Valid @RequestBody ProductDTO productDTO) {
+        if (jwt == null || jwt.isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("JWT is missing");
+        }
         String username = jwtUtil.extractUsername(jwt);
         return productServices.addProduct(username, productDTO);
     }
 
+    // Update product (requires login + admin or owner)
     @PutMapping("/products/{id}")
-    public ResponseEntity<?> putProducts(
-            @CookieValue(name = "jwt", required = false) String jwt,
-            @PathVariable("id") String productId, @RequestBody UpdatedProduct updatedProduct) {
-
-        if (jwt == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No JWT provided");
+    public ResponseEntity<?> putProduct(@CookieValue(name = "jwt", required = false) String jwt,
+                                        @PathVariable("id") String productId,
+                                        @RequestBody UpdatedProduct updatedProduct) {
+        if (jwt == null || jwt.isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("JWT is missing");
         }
         String username = jwtUtil.extractUsername(jwt);
-        productServices.putProducts(username, productId, updatedProduct);
-
-        return ResponseEntity.ok("Product updated successfully");
+        return productServices.putProducts(username, productId, updatedProduct);
     }
 
+    // Delete product (requires login + admin or owner)
     @DeleteMapping("/products/{id}")
     public ResponseEntity<?> deleteProduct(@CookieValue(name = "jwt", required = false) String jwt,
-            @PathVariable("id") String productId) {
-
+                                           @PathVariable("id") String productId) {
+        if (jwt == null || jwt.isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("JWT is missing");
+        }
         String username = jwtUtil.extractUsername(jwt);
         return productServices.deleteProduct(productId, username);
     }
 
+    // Get all users (admin only)
     @GetMapping("/users")
     public ResponseEntity<?> getUsers(@CookieValue(name = "jwt", required = false) String jwt) {
+        if (jwt == null || jwt.isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("JWT is missing");
+        }
         String username = jwtUtil.extractUsername(jwt);
         return productServices.getUsers(username);
     }
-
 }

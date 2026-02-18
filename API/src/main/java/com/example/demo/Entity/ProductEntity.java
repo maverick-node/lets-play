@@ -1,6 +1,5 @@
 package com.example.demo.Entity;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.Id;

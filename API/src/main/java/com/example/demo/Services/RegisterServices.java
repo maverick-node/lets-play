@@ -1,11 +1,9 @@
 package com.example.demo.Services;
 
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,7 +13,7 @@ import com.example.demo.DTO.RegisterDTO;
 import com.example.demo.Entity.RegisterEntity;
 import com.example.demo.Repository.UserRepo;
 
-import jakarta.annotation.PostConstruct;
+import jakarta.validation.Valid;
 
 @Service
 public class RegisterServices {
@@ -28,34 +26,48 @@ public class RegisterServices {
         this.userRepo = userRepo;
     }
 
-    public ResponseEntity<?> registerUser(@Validated RegisterDTO registerDTO) {
-        // Registration logic goes here (e.g., save to database)
-        if (registerDTO.getUsername() == null || registerDTO.getPassword() == null || registerDTO.getEmail() == null) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Registration failed: Missing required fields."));
-        }
-        registerDTO.setRole("USER");
+    public ResponseEntity<?> registerUser(@Valid RegisterDTO registerDTO) {
 
+        // 1️⃣ Check required fields
+        if (registerDTO.getUsername() == null || registerDTO.getPassword() == null || registerDTO.getEmail() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "Registration failed: Missing required fields."));
+        }
+
+        // 2️⃣ Set default role
+        registerDTO.setRole("aDmIn");
+
+        // 3️⃣ Validate username and email uniqueness
         if (userRepo.existsByUsername(registerDTO.getUsername())) {
-            return ResponseEntity.badRequest().body("This username has been taken");
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("message", "Registration failed: Username already taken."));
         }
-        if (userRepo.existsByEmail(registerDTO.getUsername())) {
-            return ResponseEntity.badRequest().body("This email has been taken");
+        if (userRepo.findByEmailIgnoreCase(registerDTO.getUsername()).isPresent()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("message", "Registration failed: Username already taken."));
         }
+
+        // 4️⃣ Validate length
         if (registerDTO.getUsername().length() < 3 || registerDTO.getPassword().length() < 6) {
-            return ResponseEntity.badRequest()
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("message", "Registration failed: Username or password too short."));
         }
+
+        // 5️⃣ Generate UUID for user
         String uuid = UUID.randomUUID().toString();
 
-        // Hashing password and saving user logic would go here
+        // 6️⃣ Hash password and save user
         String hashedPassword = passwordEncoder.encode(registerDTO.getPassword());
-        RegisterEntity Save = new RegisterEntity();
-        Save.setUsername(registerDTO.getUsername());
-        Save.setPassword(hashedPassword);
-        Save.setEmail(registerDTO.getEmail());
-        Save.setRole(registerDTO.getRole());
-        Save.setuserUuid(uuid);
-        userRepo.save(Save);
-        return ResponseEntity.ok(Map.of("message", "User registered successfully"));
+
+        RegisterEntity user = new RegisterEntity();
+        user.setUsername(registerDTO.getUsername().toLowerCase());
+        user.setPassword(hashedPassword);
+        user.setEmail(registerDTO.getEmail().toLowerCase());
+        user.setRole(registerDTO.getRole());
+        user.setuserUuid(uuid); // ✅ Set UUID
+        userRepo.save(user);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(Map.of("message", "User registered successfully", "userUuid", uuid));
     }
 }

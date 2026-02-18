@@ -5,7 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 
-import org.apache.coyote.BadRequestException;
+
 import org.springframework.stereotype.Service;
 
 import com.example.demo.Entity.RegisterEntity;
@@ -13,7 +13,6 @@ import com.example.demo.Repository.UserRepo;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
-import java.util.Optional;
 
 @Service
 public class JwtUtil {
