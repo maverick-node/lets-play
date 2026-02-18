@@ -35,7 +35,7 @@ public class LoginServices {
         Optional<RegisterEntity> users = userRepo.findByUsername(loginDTO.getUsername());
         if (users.isPresent() && passwordEncoder.matches(loginDTO.getPassword(), users.get().getPassword())) {
             // JWT token generation logic can be added here
-            String token = jwtUtil.generateToken(loginDTO.getUsername() + "-" + users.get().getId());
+            String token = jwtUtil.generateToken(users.get().getUsername(), users.get().getuserUuid());
             ResponseCookie cookie = ResponseCookie.from("jwt", token)
                     .httpOnly(true)
                     .path("/")

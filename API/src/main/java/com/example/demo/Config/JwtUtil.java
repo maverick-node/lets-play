@@ -3,52 +3,63 @@ package com.example.demo.Config;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import java.security.Key;
+
+import org.apache.coyote.BadRequestException;
+import org.springframework.stereotype.Service;
+
+import com.example.demo.Entity.RegisterEntity;
+import com.example.demo.Repository.UserRepo;
+
+import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.Optional;
 
-import org.springframework.stereotype.Component;
-
-@Component
+@Service
 public class JwtUtil {
 
-    private static final String SECRET_KEY = "bXlTZWNyZXRLZXlGb3JTaWduaW5nSmF3dEV4YW1wbGUyNTY=";
+    private final UserRepo userRepo;
 
-    private static final long EXPIRATION = 1000 * 60 * 60;
-
-    private Key getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
-        return Keys.hmacShaKeyFor(keyBytes);
+    public JwtUtil(UserRepo userRepo) {
+        this.userRepo = userRepo;
     }
 
-    public String generateToken(String username) {
+    private static final SecretKey SECRET_KEY = Keys.hmacShaKeyFor(
+            "zone01secretkey_jwt_for_testssss".getBytes());
+
+    public String generateToken(String username, String userUuid) {
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(username) // 👈 KEEP IT
+                .claim("uuid", userUuid)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .setExpiration(new Date(System.currentTimeMillis() + 3600_000))
+                .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public boolean validateToken(String token, String username) {
-        final String extractedUsername = extractUsername(token);
-        return (extractedUsername.equals(username) && !isTokenExpired(token));
+ public String extractUsername(String token) {
+    if (token == null || token.isEmpty()) {
+        return "Error";
     }
 
-    public String extractUsername(String token) {
-        return extractAllClaims(token).getSubject();
+    Claims claims = Jwts.parserBuilder()
+            .setSigningKey(SECRET_KEY)
+            .build()
+            .parseClaimsJws(token)
+            .getBody();
+
+    String username = claims.getSubject();
+    String uuidFromToken = claims.get("uuid", String.class);
+
+    RegisterEntity foundUser = userRepo.findByUsername(username)
+            .orElseThrow(() -> new SecurityException("User not found"));
+
+    if (!foundUser.getuserUuid().equals(uuidFromToken)) {
+        throw new SecurityException("Invalid token");
     }
 
-    public boolean isTokenExpired(String token) {
-        return extractAllClaims(token).getExpiration().before(new Date());
-    }
+    return username;
+}
 
-    private Claims extractAllClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-    }
+
 }

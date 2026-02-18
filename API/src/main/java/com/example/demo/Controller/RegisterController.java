@@ -20,7 +20,7 @@ public class RegisterController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Map<String, String>> registerUser(@Validated @RequestBody RegisterDTO registerDTO) {
+    public ResponseEntity<?> registerUser(@Validated @RequestBody RegisterDTO registerDTO) {
         return registerServices.registerUser(registerDTO);
 
     }
